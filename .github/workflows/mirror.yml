@@ -1,0 +1,20 @@
+# One-off: copies the packages from the old release (bajoelabrigo/flip-addons, tag packages) into
+# this repository's "packages" release.
+name: Mirror packages
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Copy every asset
+        run: |
+          gh release view packages --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
+            gh release create packages --repo "$GITHUB_REPOSITORY" --title "Paquetes" --notes "Paquetes de extras que instala Flip Studio."
+          mkdir pkgs && cd pkgs
+          gh release download packages --repo bajoelabrigo/flip-addons
+          ls -la
+          for f in *.driftpkg; do gh release upload packages "$f" --repo "$GITHUB_REPOSITORY" --clobber; done
